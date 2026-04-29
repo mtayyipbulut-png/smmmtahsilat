@@ -635,26 +635,32 @@ function hl(t,q){
   catch(x){ return e; }
 }
 
+// ─── SUPABASE BAĞLANTISI ─────────────────────────────────────────────────────
+var SUPA_URL = 'https://fqyghiolpywdosmodflq.supabase.co';
+var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxeWdoaW9scHd5ZG9zbW9kZmxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzY2MjgsImV4cCI6MjA5MzA1MjYyOH0.bI7tI2qMCpt8aCD7ayWK1SusUBxa2uGCJ_7i-z35xWg';
+
+function supaFetch(path, opts) {
+  return fetch(SUPA_URL + '/rest/v1/' + path, Object.assign({
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }
+  }, opts || {}));
+}
+
 // ─── VERİ ────────────────────────────────────────────────────────────────────
-var customers = JSON.parse(localStorage.getItem('mh_c')||'null') || [
-  {id:1,ad:'Ahmet Yilmaz Ltd.',vkn:'1234567890',tel:'0532 111 2233',email:'ahmet@firma.com',ucret:3000,otomatik:1,not:'',sifre:''},
-  {id:2,ad:'Gunes Tekstil A.S.',vkn:'9876543210',tel:'0542 333 4455',email:'info@gunestekstil.com',ucret:2500,otomatik:1,not:'',sifre:''},
-  {id:3,ad:'Mavi Yapi Ins.',vkn:'5556667778',tel:'0555 777 8899',email:'mavi@yapi.com',ucret:1500,otomatik:0,not:'Fatura istiyor',sifre:''}
-];
-var txs = JSON.parse(localStorage.getItem('mh_t')||'null') || [
-  {id:1,mId:1,tip:'tahakkuk',tarih:'2026-04-01',tutar:3000,aciklama:'Nisan 2026 Muhasebe Ucreti'},
-  {id:2,mId:2,tip:'tahakkuk',tarih:'2026-04-01',tutar:2500,aciklama:'Nisan 2026 Muhasebe Ucreti'},
-  {id:3,mId:1,tip:'odeme',   tarih:'2026-04-10',tutar:3000,aciklama:'Nisan odemesi alindi'},
-  {id:4,mId:2,tip:'tahakkuk',tarih:'2026-03-01',tutar:2500,aciklama:'Mart 2026 Muhasebe Ucreti'}
-];
+var customers = [];
+var txs = [];
 var editId=null, importRows=[], sfState={}, ekstreData=null;
 var AYLAR=['Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
 var now=new Date();
 
-// Şifreler anahtarlar
+// Şifreler — Supabase settings tablosundan gelir, fallback localStorage
 var ADMIN_PW_KEY='mh_apw'; var DEFAULT_ADMIN_PW='admin1234';
 var ADMIN_EMAIL_KEY='mh_aemail'; var DEFAULT_ADMIN_EMAIL='admin@ofis.com';
-var CUST_PW_KEY='mh_cpw';  // JSON: {email: sifre}
+var CUST_PW_KEY='mh_cpw';
 
 function getAdminPw(){ return localStorage.getItem(ADMIN_PW_KEY)||DEFAULT_ADMIN_PW; }
 function getAdminEmail(){ return (localStorage.getItem(ADMIN_EMAIL_KEY)||DEFAULT_ADMIN_EMAIL).toLowerCase(); }
@@ -672,13 +678,149 @@ function getCustPw(email){
   return pws[e] || getDefaultCustPw(e);
 }
 
-function persist(){
-  localStorage.setItem('mh_c',JSON.stringify(customers));
-  localStorage.setItem('mh_t',JSON.stringify(txs));
-}
-function nxtId(arr){ if(!arr.length) return 1; var m=0; arr.forEach(function(x){if(x.id>m)m=x.id;}); return m+1; }
 function getCust(id){ for(var i=0;i<customers.length;i++) if(customers[i].id==id) return customers[i]; return {ad:'—',email:'',vkn:''}; }
 function balance(mId){ var s=0; txs.forEach(function(t){ if(t.mId==mId) s+=t.tip==='tahakkuk'?Number(t.tutar):-Number(t.tutar); }); return s; }
+
+// Yükleme göstergesi
+function showLoading(msg) {
+  var el = document.getElementById('loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-overlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;display:flex;align-items:center;justify-content:center';
+    el.innerHTML = '<div style="background:var(--surface);border-radius:12px;padding:24px 32px;font-size:14px;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.2)">' + (msg||'Yukleniyor...') + '</div>';
+    document.body.appendChild(el);
+  } else {
+    el.querySelector('div').textContent = msg||'Yukleniyor...';
+    el.style.display = 'flex';
+  }
+}
+function hideLoading() {
+  var el = document.getElementById('loading-overlay');
+  if (el) el.style.display = 'none';
+}
+
+// ─── SUPABASE VERİ FONKSİYONLARI ─────────────────────────────────────────────
+function loadAllData(callback) {
+  showLoading('Veriler yükleniyor...');
+  var loaded = 0;
+  var errors = [];
+
+  supaFetch('customers?select=*&order=id')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (Array.isArray(data)) {
+        customers = data.map(function(c){ return {
+          id: c.id, ad: c.ad||'', vkn: c.vkn||'', tel: c.tel||'',
+          email: c.email||'', ucret: Number(c.ucret)||0,
+          otomatik: Number(c.otomatik)||0, not: c.not_alan||'', sifre:''
+        }; });
+      }
+      loaded++;
+      if (loaded === 2) { hideLoading(); if(callback) callback(); }
+    })
+    .catch(function(e){ errors.push(e); loaded++; if(loaded===2){hideLoading();if(callback)callback();} });
+
+  supaFetch('transactions?select=*&order=id')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (Array.isArray(data)) {
+        txs = data.map(function(t){ return {
+          id: t.id, mId: t.m_id, tip: t.tip,
+          tarih: t.tarih, tutar: Number(t.tutar)||0, aciklama: t.aciklama||''
+        }; });
+      }
+      loaded++;
+      if (loaded === 2) { hideLoading(); if(callback) callback(); }
+    })
+    .catch(function(e){ errors.push(e); loaded++; if(loaded===2){hideLoading();if(callback)callback();} });
+}
+
+function sbAddCustomer(obj, callback) {
+  supaFetch('customers', {
+    method: 'POST',
+    body: JSON.stringify({
+      ad: obj.ad, vkn: obj.vkn, tel: obj.tel, email: obj.email,
+      ucret: obj.ucret, otomatik: obj.otomatik, not_alan: obj.not
+    })
+  }).then(function(r){ return r.json(); })
+    .then(function(data){
+      var rec = Array.isArray(data) ? data[0] : data;
+      obj.id = rec.id;
+      customers.push(obj);
+      if(callback) callback();
+    })
+    .catch(function(e){ alert('Kayit hatasi: '+e.message); });
+}
+
+function sbUpdateCustomer(id, obj, callback) {
+  supaFetch('customers?id=eq.'+id, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      ad: obj.ad, vkn: obj.vkn, tel: obj.tel, email: obj.email,
+      ucret: obj.ucret, otomatik: obj.otomatik, not_alan: obj.not
+    })
+  }).then(function(){
+      var c = customers.find(function(c){ return c.id==id; });
+      if(c) Object.assign(c, obj);
+      if(callback) callback();
+    })
+    .catch(function(e){ alert('Guncelleme hatasi: '+e.message); });
+}
+
+function sbDeleteCustomer(id, callback) {
+  supaFetch('customers?id=eq.'+id, { method: 'DELETE' })
+    .then(function(){
+      customers = customers.filter(function(c){ return c.id!=id; });
+      txs = txs.filter(function(t){ return t.mId!=id; });
+      if(callback) callback();
+    })
+    .catch(function(e){ alert('Silme hatasi: '+e.message); });
+}
+
+function sbAddTransaction(obj, callback) {
+  supaFetch('transactions', {
+    method: 'POST',
+    body: JSON.stringify({
+      m_id: obj.mId, tip: obj.tip, tarih: obj.tarih,
+      tutar: obj.tutar, aciklama: obj.aciklama
+    })
+  }).then(function(r){ return r.json(); })
+    .then(function(data){
+      var rec = Array.isArray(data) ? data[0] : data;
+      obj.id = rec.id;
+      txs.push(obj);
+      if(callback) callback();
+    })
+    .catch(function(e){ alert('Islem kayit hatasi: '+e.message); });
+}
+
+function sbDeleteTransaction(id, callback) {
+  supaFetch('transactions?id=eq.'+id, { method: 'DELETE' })
+    .then(function(){
+      txs = txs.filter(function(t){ return t.id!=id; });
+      if(callback) callback();
+    })
+    .catch(function(e){ alert('Silme hatasi: '+e.message); });
+}
+
+function sbAddTransactionBulk(list, callback) {
+  var rows = list.map(function(obj){ return {
+    m_id: obj.mId, tip: obj.tip, tarih: obj.tarih,
+    tutar: obj.tutar, aciklama: obj.aciklama
+  }; });
+  supaFetch('transactions', {
+    method: 'POST',
+    body: JSON.stringify(rows)
+  }).then(function(r){ return r.json(); })
+    .then(function(data){
+      var recs = Array.isArray(data) ? data : [data];
+      recs.forEach(function(rec, i){ list[i].id = rec.id; txs.push(list[i]); });
+      if(callback) callback();
+    })
+    .catch(function(e){ alert('Toplu tahakkuk hatasi: '+e.message); });
+}
+
 
 // ─── OTURUM ──────────────────────────────────────────────────────────────────
 var SESS_KEY='mh_sess';
@@ -742,13 +884,17 @@ function showApp(role, custId){
     document.getElementById('sidebar-footer-txt').textContent = 'Veriler tarayicida saklanir';
     // İlk sayfayı göster
     switchPage('musteriler');
-    renderMusteriler();
+    loadAllData(function(){
+      renderMusteriler();
+    });
   } else {
-    var c = getCust(custId);
-    document.getElementById('sidebar-user-name').textContent = c.ad;
-    document.getElementById('sidebar-footer-txt').textContent = 'Sifreyi degistir';
     switchPage('portal');
-    renderPortal();
+    loadAllData(function(){
+      var c = getCust(custId);
+      document.getElementById('sidebar-user-name').textContent = c.ad || '';
+      document.getElementById('sidebar-footer-txt').textContent = 'Sifreyi degistir';
+      renderPortal();
+    });
   }
 }
 
@@ -825,13 +971,32 @@ function doMusteriLogin(){
   var email = el('musteri-email').value.trim().toLowerCase();
   var pw    = el('musteri-pw').value;
   var errEl = el('musteri-err');
-  var found = null;
-  customers.forEach(function(c){ if(c.email && c.email.toLowerCase()===email) found=c; });
-  if(!found){ errEl.style.display='block'; return; }
-  if(pw !== getCustPw(email)){ errEl.style.display='block'; el('musteri-pw').select(); return; }
   errEl.style.display = 'none';
-  setSession('musteri', found.id);
-  showApp('musteri', found.id);
+  showLoading('Giris yapiliyor...');
+  // Supabase'den email ile musteri ara
+  supaFetch('customers?email=eq.' + encodeURIComponent(email) + '&select=*')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      hideLoading();
+      if (!Array.isArray(data) || data.length === 0) {
+        errEl.style.display = 'block'; return;
+      }
+      var rec = data[0];
+      var found = {
+        id: rec.id, ad: rec.ad||'', vkn: rec.vkn||'', tel: rec.tel||'',
+        email: rec.email||'', ucret: Number(rec.ucret)||0,
+        otomatik: Number(rec.otomatik)||0, not: rec.not_alan||'', sifre:''
+      };
+      if (pw !== getCustPw(email)) {
+        errEl.style.display = 'block'; el('musteri-pw').select(); return;
+      }
+      setSession('musteri', found.id);
+      showApp('musteri', found.id);
+    })
+    .catch(function(){
+      hideLoading();
+      errEl.style.display = 'block';
+    });
 }
 el('musteri-login-btn').addEventListener('click', doMusteriLogin);
 el('musteri-pw').addEventListener('keydown', function(e){ if(e.key==='Enter') doMusteriLogin(); });
@@ -969,18 +1134,25 @@ el('btn-musteri-kaydet').addEventListener('click',function(){
   var email=el('m-email').value.trim().toLowerCase();
   var obj={ad:ad,vkn:el('m-vkn').value.trim(),tel:el('m-tel').value.trim(),email:email,
     ucret:Number(el('m-ucret').value)||0,otomatik:Number(el('m-otomatik').value),not:el('m-not').value.trim(),sifre:''};
-  // custom password
   var newPw=el('m-sifre').value.trim();
   if(newPw && email) setCustPassword(email, newPw);
-  if(editId){ Object.assign(customers.find(function(c){ return c.id===editId; })||{},obj); }
-  else{ obj.id=nxtId(customers); customers.push(obj); }
-  persist(); hide('modal-musteri'); renderMusteriler();
+  showLoading('Kaydediliyor...');
+  if(editId){
+    sbUpdateCustomer(editId, obj, function(){
+      hideLoading(); hide('modal-musteri'); renderMusteriler();
+    });
+  } else {
+    sbAddCustomer(obj, function(){
+      hideLoading(); hide('modal-musteri'); renderMusteriler();
+    });
+  }
 });
 function delMusteri(id){
   if(!confirm('Bu musteriyi silmek istiyor musunuz?')) return;
-  customers=customers.filter(function(c){ return c.id!==id; });
-  txs=txs.filter(function(t){ return t.mId!==id; });
-  persist(); renderMusteriler();
+  showLoading('Siliniyor...');
+  sbDeleteCustomer(id, function(){
+    hideLoading(); renderMusteriler();
+  });
 }
 
 // ─── ADMIN: ÖDEMELER ────────────────────────────────────────────────────────
@@ -1008,8 +1180,11 @@ el('odeme-filtre-tip').addEventListener('change',renderOdemeler);
 el('odeme-tbody').addEventListener('click',function(e){
   var btn=e.target.closest('[data-action]'); if(!btn) return;
   if(btn.dataset.action==='del-tx'){
-    txs=txs.filter(function(t){ return t.id!==Number(btn.dataset.id); });
-    persist(); renderOdemeler(); updateStats(); renderMusteriler();
+    var id=Number(btn.dataset.id);
+    showLoading('Siliniyor...');
+    sbDeleteTransaction(id, function(){
+      hideLoading(); renderOdemeler(); updateStats(); renderMusteriler();
+    });
   }
 });
 el('btn-islem-gir').addEventListener('click',function(){
@@ -1020,8 +1195,11 @@ el('btn-islem-gir').addEventListener('click',function(){
 el('btn-odeme-kaydet').addEventListener('click',function(){
   var mId=sfState['odeme']&&sfState['odeme'].value; if(!mId){ alert('Lutfen musteri secin.'); return; }
   var tutar=Number(el('o-tutar').value); if(!tutar||tutar<=0){ alert('Gecerli bir tutar girin.'); return; }
-  txs.push({id:nxtId(txs),mId:Number(mId),tip:el('o-tip').value,tarih:el('o-tarih').value,tutar:tutar,aciklama:el('o-aciklama').value.trim()});
-  persist(); hide('modal-odeme'); renderOdemeler(); updateStats(); renderMusteriler();
+  var obj={mId:Number(mId),tip:el('o-tip').value,tarih:el('o-tarih').value,tutar:tutar,aciklama:el('o-aciklama').value.trim()};
+  showLoading('Kaydediliyor...');
+  sbAddTransaction(obj, function(){
+    hideLoading(); hide('modal-odeme'); renderOdemeler(); updateStats(); renderMusteriler();
+  });
 });
 
 // ─── ADMIN: TAHAKKUKLAR ──────────────────────────────────────────────────────
@@ -1042,14 +1220,19 @@ el('tahakkuk-ay').addEventListener('change',renderTahakkuk);
 el('tahakkuk-yil').addEventListener('change',renderTahakkuk);
 el('btn-toplu-tah').addEventListener('click',function(){
   var ay=Number(el('tahakkuk-ay').value), yil=Number(el('tahakkuk-yil').value);
-  var pfx=yil+'-'+String(ay).padStart(2,'0'); var sayi=0;
+  var pfx=yil+'-'+String(ay).padStart(2,'0');
+  var list=[];
   customers.filter(function(c){ return c.ucret>0; }).forEach(function(c){
     var cb=el('cb-'+c.id); if(!cb||!cb.checked) return;
     if(!txs.some(function(t){ return t.mId==c.id&&t.tip==='tahakkuk'&&t.tarih.slice(0,7)===pfx; })){
-      txs.push({id:nxtId(txs),mId:c.id,tip:'tahakkuk',tarih:pfx+'-01',tutar:c.ucret,aciklama:AYLAR[ay-1]+' '+yil+' Muhasebe Ucreti'}); sayi++;
+      list.push({mId:c.id,tip:'tahakkuk',tarih:pfx+'-01',tutar:c.ucret,aciklama:AYLAR[ay-1]+' '+yil+' Muhasebe Ucreti'});
     }
   });
-  persist(); alert(sayi+' adet tahakkuk olusturuldu.'); renderTahakkuk(); updateStats();
+  if(!list.length){ alert('Eklenecek tahakkuk yok.'); return; }
+  showLoading('Tahakkuklar olusturuluyor...');
+  sbAddTransactionBulk(list, function(){
+    hideLoading(); alert(list.length+' adet tahakkuk olusturuldu.'); renderTahakkuk(); updateStats();
+  });
 });
 
 // ─── ADMIN: EKSTRİ ───────────────────────────────────────────────────────────
@@ -1265,11 +1448,24 @@ function processImportFile(file){
   reader.readAsArrayBuffer(file);
 }
 el('btn-import-kaydet').addEventListener('click',function(){
-  importRows.filter(function(r){return!r.dup;}).forEach(function(r){
-    var c={id:nxtId(customers),ad:r.ad,vkn:r.vkn,tel:r.tel,email:r.email,ucret:r.ucret,otomatik:r.otomatik,not:r.not,sifre:''};
-    customers.push(c);
-  });
-  persist(); hide('modal-import'); renderMusteriler(); alert(importRows.filter(function(r){return!r.dup;}).length+' musteri eklendi.');
+  var yeni=importRows.filter(function(r){return!r.dup;});
+  if(!yeni.length) return;
+  showLoading('Ice aktariliyor...');
+  var rows=yeni.map(function(r){ return {
+    ad:r.ad, vkn:r.vkn, tel:r.tel, email:r.email,
+    ucret:r.ucret, otomatik:r.otomatik, not_alan:r.not
+  }; });
+  supaFetch('customers', {
+    method:'POST',
+    body:JSON.stringify(rows)
+  }).then(function(r){ return r.json(); })
+    .then(function(data){
+      hideLoading();
+      hide('modal-import');
+      loadAllData(function(){ renderMusteriler(); });
+      alert(yeni.length+' musteri basariyla ice aktarildi.');
+    })
+    .catch(function(e){ hideLoading(); alert('Ice aktarma hatasi: '+e.message); });
 });
 
 // ─── SEARCHABLE DROPDOWN ─────────────────────────────────────────────────────
@@ -1328,10 +1524,8 @@ el('btn-theme-mob').addEventListener('click',toggleTheme);
 var sess = getSession();
 if(sess && sess.role === 'admin'){
   showApp('admin', null);
-} else if(sess && sess.role === 'musteri'){
-  var sc = getCust(sess.custId);
-  if(sc && sc.id){ showApp('musteri', sess.custId); }
-  else{ clearSession(); showLoginScreen(); }
+} else if(sess && sess.role === 'musteri' && sess.custId){
+  showApp('musteri', sess.custId);
 } else {
   showLoginScreen();
 }
