@@ -722,15 +722,26 @@ function fbAddCustomer(obj, callback) {
     .catch(function(e){alert('Kayit hatasi: '+e.message);});
 }
 function fbUpdateCustomer(id, obj, callback) {
-  db.collection('customers').doc(id).update({ad:obj.ad,vkn:obj.vkn,tel:obj.tel,email:obj.email,ucret:obj.ucret,otomatik:obj.otomatik,not:obj.not})
-    .then(function(){var c=customers.find(function(c){return c.id===id;});if(c)Object.assign(c,obj);if(callback)callback();})
+  var sid=String(id);
+  db.collection('customers').doc(sid).update({ad:obj.ad,vkn:obj.vkn,tel:obj.tel,email:obj.email,ucret:obj.ucret,otomatik:obj.otomatik,not:obj.not})
+    .then(function(){var c=customers.find(function(c){return c.id===sid;});if(c)Object.assign(c,obj);if(callback)callback();})
     .catch(function(e){alert('Guncelleme hatasi: '+e.message);});
 }
 function fbDeleteCustomer(id, callback) {
+  if(!id){ alert('Gecersiz musteri ID.'); return; }
+  var sid = String(id);
   var batch=db.batch();
-  db.collection('transactions').where('mId','==',id).get()
-    .then(function(snap){snap.forEach(function(doc){batch.delete(doc.ref);});batch.delete(db.collection('customers').doc(id));return batch.commit();})
-    .then(function(){customers=customers.filter(function(c){return c.id!==id;});txs=txs.filter(function(t){return t.mId!==id;});if(callback)callback();})
+  db.collection('transactions').where('mId','==',sid).get()
+    .then(function(snap){
+      snap.forEach(function(doc){batch.delete(doc.ref);});
+      batch.delete(db.collection('customers').doc(sid));
+      return batch.commit();
+    })
+    .then(function(){
+      customers=customers.filter(function(c){return c.id!==sid;});
+      txs=txs.filter(function(t){return t.mId!==sid;});
+      if(callback)callback();
+    })
     .catch(function(e){alert('Silme hatasi: '+e.message);});
 }
 function fbAddTransaction(obj, callback) {
@@ -739,8 +750,9 @@ function fbAddTransaction(obj, callback) {
     .catch(function(e){alert('Islem kayit hatasi: '+e.message);});
 }
 function fbDeleteTransaction(id, callback) {
-  db.collection('transactions').doc(id).delete()
-    .then(function(){txs=txs.filter(function(t){return t.id!==id;});if(callback)callback();})
+  var sid=String(id);
+  db.collection('transactions').doc(sid).delete()
+    .then(function(){txs=txs.filter(function(t){return t.id!==sid;});if(callback)callback();})
     .catch(function(e){alert('Silme hatasi: '+e.message);});
 }
 function fbAddTransactionBulk(list, callback) {
@@ -1078,7 +1090,7 @@ el('btn-musteri-kaydet').addEventListener('click',function(){
 function delMusteri(id){
   if(!confirm('Bu musteriyi silmek istiyor musunuz?')) return;
   showLoading('Siliniyor...');
-  fbDeleteCustomer(id, function(){
+  fbDeleteCustomer(String(id), function(){
     hideLoading(); renderMusteriler();
   });
 }
