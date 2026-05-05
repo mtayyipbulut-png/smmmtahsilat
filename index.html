@@ -26,7 +26,7 @@
   --shadow-dd:0 4px 20px rgba(0,0,0,.45);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);font-size:15px;line-height:1.5;transition:background .2s,color .2s}
+html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);font-size:16px;line-height:1.5;transition:background .2s,color .2s}
 
 /* ── LOGIN ── */
 #login-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -340,6 +340,7 @@ tbody tr:hover td{background:var(--surface2)}
   <div class="mob-header">
     <div class="mob-title" id="mob-page-title">Musteriler</div>
     <div class="mob-actions">
+      <button class="icon-btn admin-only" id="btn-settings-mob" title="Ayarlar" style="display:none">&#9881;</button>
       <button class="icon-btn" id="btn-theme-mob">&#9790;</button>
       <button class="icon-btn logout-btn" id="btn-logout-mob" title="Cikis">&#128274;</button>
     </div>
@@ -348,6 +349,7 @@ tbody tr:hover td{background:var(--surface2)}
     <div class="topbar-title" id="page-title">Musteriler</div>
     <div style="display:flex;align-items:center;gap:10px">
       <div class="topbar-date" id="top-date"></div>
+      <button class="icon-btn admin-only" id="btn-settings" title="Yonetici Ayarlari" style="display:none">&#9881;</button>
       <button class="icon-btn" id="btn-theme">&#9790;</button>
       <button class="icon-btn logout-btn" id="btn-logout">&#128274;</button>
     </div>
@@ -585,11 +587,15 @@ tbody tr:hover td{background:var(--surface2)}
 <!-- Sifre degistir (admin) -->
 <div id="modal-sifre" class="overlay hidden">
   <div class="modal narrow">
-    <div class="modal-hd"><h2>Yonetici Bilgilerini Degistir</h2><button class="modal-x" data-close="modal-sifre">&#215;</button></div>
+    <div class="modal-hd"><h2>&#9881; Yonetici Ayarlari</h2><button class="modal-x" data-close="modal-sifre">&#215;</button></div>
     <div class="modal-bd">
-      <div class="frow"><label>Mevcut Sifre</label><input type="password" id="pw-mevcut"></div>
-      <div class="frow"><label>Yeni E-posta</label><input type="email" id="pw-email" placeholder="Bos birakilirsa degismez"></div>
-      <div class="frow"><label>Yeni Sifre</label><input type="password" id="pw-yeni" placeholder="Bos birakilirsa degismez"></div>
+      <div style="background:var(--surface2);border-radius:var(--rs);padding:10px 12px;margin-bottom:14px;font-size:13px;">
+        <div style="color:var(--text3);margin-bottom:4px">Mevcut e-posta:</div>
+        <div style="font-weight:500" id="pw-current-email"></div>
+      </div>
+      <div class="frow"><label>Mevcut Sifre *</label><input type="password" id="pw-mevcut" placeholder="Dogrulama icin gerekli"></div>
+      <div class="frow"><label>Yeni E-posta</label><input type="email" id="pw-email" placeholder="Degistirmek istemiyorsaniz bos birakin"></div>
+      <div class="frow"><label>Yeni Sifre</label><input type="password" id="pw-yeni" placeholder="Degistirmek istemiyorsaniz bos birakin"></div>
       <div class="frow"><label>Yeni Sifre (tekrar)</label><input type="password" id="pw-yeni2"></div>
       <div class="login-error hidden" id="pw-error"></div>
     </div>
@@ -619,6 +625,8 @@ tbody tr:hover td{background:var(--surface2)}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
 (function(){
 'use strict';
@@ -635,192 +643,118 @@ function hl(t,q){
   catch(x){ return e; }
 }
 
-// ─── SUPABASE BAĞLANTISI ─────────────────────────────────────────────────────
-var SUPA_URL = 'https://fqyghiolpywdosmodflq.supabase.co';
-var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxeWdoaW9scHd5ZG9zbW9kZmxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NzY2MjgsImV4cCI6MjA5MzA1MjYyOH0.bI7tI2qMCpt8aCD7ayWK1SusUBxa2uGCJ_7i-z35xWg';
+// ─── FİREBASE BAĞLANTISI ─────────────────────────────────────────────────────
+var firebaseConfig = {
+  apiKey: "AIzaSyDDkWrEZeLYrxH79QRmBK2DRff1YYKC64Q",
+  authDomain: "musteri-dosya-bilgi.firebaseapp.com",
+  projectId: "musteri-dosya-bilgi",
+  storageBucket: "musteri-dosya-bilgi.firebasestorage.app",
+  messagingSenderId: "682456860066",
+  appId: "1:682456860066:web:cfc49c4c4a820656f25efb"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
 
-function supaFetch(path, opts) {
-  return fetch(SUPA_URL + '/rest/v1/' + path, Object.assign({
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    }
-  }, opts || {}));
-}
-
-// ─── VERİ ────────────────────────────────────────────────────────────────────
+// ─── VERİ DEĞİŞKENLERİ ───────────────────────────────────────────────────────
 var customers = [];
 var txs = [];
-var editId=null, importRows=[], sfState={}, ekstreData=null;
-var AYLAR=['Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
-var now=new Date();
+var editId = null, importRows = [], sfState = {}, ekstreData = null;
+var AYLAR = ['Ocak','Subat','Mart','Nisan','Mayis','Haziran','Temmuz','Agustos','Eylul','Ekim','Kasim','Aralik'];
+var now = new Date();
 
-// Şifreler — Supabase settings tablosundan gelir, fallback localStorage
 var ADMIN_PW_KEY='mh_apw'; var DEFAULT_ADMIN_PW='admin1234';
 var ADMIN_EMAIL_KEY='mh_aemail'; var DEFAULT_ADMIN_EMAIL='admin@ofis.com';
 var CUST_PW_KEY='mh_cpw';
 
 function getAdminPw(){ return localStorage.getItem(ADMIN_PW_KEY)||DEFAULT_ADMIN_PW; }
 function getAdminEmail(){ return (localStorage.getItem(ADMIN_EMAIL_KEY)||DEFAULT_ADMIN_EMAIL).toLowerCase(); }
-function getCustPasswords(){
-  try{ return JSON.parse(localStorage.getItem(CUST_PW_KEY)||'{}'); }
-  catch(e){ return {}; }
-}
-function setCustPassword(email, pw){
-  var pws=getCustPasswords(); pws[email.toLowerCase()]=pw;
-  localStorage.setItem(CUST_PW_KEY, JSON.stringify(pws));
-}
+function getCustPasswords(){ try{ return JSON.parse(localStorage.getItem(CUST_PW_KEY)||'{}'); }catch(e){ return {}; } }
+function setCustPassword(email, pw){ var pws=getCustPasswords(); pws[email.toLowerCase()]=pw; localStorage.setItem(CUST_PW_KEY, JSON.stringify(pws)); }
 function getDefaultCustPw(email){ return email.toLowerCase().slice(0,4); }
-function getCustPw(email){
-  var pws=getCustPasswords(); var e=email.toLowerCase();
-  return pws[e] || getDefaultCustPw(e);
-}
-
+function getCustPw(email){ var pws=getCustPasswords(); var e=email.toLowerCase(); return pws[e]||getDefaultCustPw(e); }
 function getCust(id){ for(var i=0;i<customers.length;i++) if(customers[i].id==id) return customers[i]; return {ad:'—',email:'',vkn:''}; }
 function balance(mId){ var s=0; txs.forEach(function(t){ if(t.mId==mId) s+=t.tip==='tahakkuk'?Number(t.tutar):-Number(t.tutar); }); return s; }
 
-// Yükleme göstergesi
+// ─── VERİ KATMANI ─────────────────────────────────────────────────────────────
 function showLoading(msg) {
-  var el = document.getElementById('loading-overlay');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'loading-overlay';
-    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;display:flex;align-items:center;justify-content:center';
-    el.innerHTML = '<div style="background:var(--surface);border-radius:12px;padding:24px 32px;font-size:14px;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.2)">' + (msg||'Yukleniyor...') + '</div>';
-    document.body.appendChild(el);
-  } else {
-    el.querySelector('div').textContent = msg||'Yukleniyor...';
-    el.style.display = 'flex';
+  var ov = document.getElementById('loading-overlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'loading-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9999;display:flex;align-items:center;justify-content:center';
+    ov.innerHTML = '<div style="background:var(--surface);border-radius:12px;padding:24px 32px;font-size:15px;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.2)"></div>';
+    document.body.appendChild(ov);
   }
+  ov.querySelector('div').textContent = msg||'Yukleniyor...';
+  ov.style.display = 'flex';
 }
 function hideLoading() {
-  var el = document.getElementById('loading-overlay');
-  if (el) el.style.display = 'none';
+  var ov = document.getElementById('loading-overlay');
+  if (ov) ov.style.display = 'none';
 }
 
-// ─── SUPABASE VERİ FONKSİYONLARI ─────────────────────────────────────────────
 function loadAllData(callback) {
-  showLoading('Veriler yükleniyor...');
+  showLoading('Veriler yukleniyor...');
   var loaded = 0;
-  var errors = [];
-
-  supaFetch('customers?select=*&order=id')
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if (Array.isArray(data)) {
-        customers = data.map(function(c){ return {
-          id: c.id, ad: c.ad||'', vkn: c.vkn||'', tel: c.tel||'',
-          email: c.email||'', ucret: Number(c.ucret)||0,
-          otomatik: Number(c.otomatik)||0, not: c.not_alan||'', sifre:''
-        }; });
-      }
-      loaded++;
-      if (loaded === 2) { hideLoading(); if(callback) callback(); }
-    })
-    .catch(function(e){ errors.push(e); loaded++; if(loaded===2){hideLoading();if(callback)callback();} });
-
-  supaFetch('transactions?select=*&order=id')
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      if (Array.isArray(data)) {
-        txs = data.map(function(t){ return {
-          id: t.id, mId: t.m_id, tip: t.tip,
-          tarih: t.tarih, tutar: Number(t.tutar)||0, aciklama: t.aciklama||''
-        }; });
-      }
-      loaded++;
-      if (loaded === 2) { hideLoading(); if(callback) callback(); }
-    })
-    .catch(function(e){ errors.push(e); loaded++; if(loaded===2){hideLoading();if(callback)callback();} });
+  db.collection('customers').orderBy('ad').get()
+    .then(function(snap) {
+      customers = [];
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        customers.push({id:doc.id, ad:d.ad||'', vkn:d.vkn||'', tel:d.tel||'', email:d.email||'', ucret:Number(d.ucret)||0, otomatik:Number(d.otomatik)||0, not:d.not||'', sifre:''});
+      });
+      loaded++; if(loaded===2){hideLoading();if(callback)callback();}
+    }).catch(function(e){hideLoading();alert('Musteriler yuklenemedi: '+e.message);});
+  db.collection('transactions').orderBy('tarih').get()
+    .then(function(snap) {
+      txs = [];
+      snap.forEach(function(doc) {
+        var d = doc.data();
+        txs.push({id:doc.id, mId:d.mId, tip:d.tip, tarih:d.tarih, tutar:Number(d.tutar)||0, aciklama:d.aciklama||''});
+      });
+      loaded++; if(loaded===2){hideLoading();if(callback)callback();}
+    }).catch(function(e){hideLoading();alert('Islemler yuklenemedi: '+e.message);});
 }
 
-function sbAddCustomer(obj, callback) {
-  supaFetch('customers', {
-    method: 'POST',
-    body: JSON.stringify({
-      ad: obj.ad, vkn: obj.vkn, tel: obj.tel, email: obj.email,
-      ucret: obj.ucret, otomatik: obj.otomatik, not_alan: obj.not
-    })
-  }).then(function(r){ return r.json(); })
-    .then(function(data){
-      var rec = Array.isArray(data) ? data[0] : data;
-      obj.id = rec.id;
-      customers.push(obj);
-      if(callback) callback();
-    })
-    .catch(function(e){ alert('Kayit hatasi: '+e.message); });
+function fbAddCustomer(obj, callback) {
+  db.collection('customers').add({ad:obj.ad,vkn:obj.vkn,tel:obj.tel,email:obj.email,ucret:obj.ucret,otomatik:obj.otomatik,not:obj.not})
+    .then(function(ref){obj.id=ref.id;customers.push(obj);if(callback)callback();})
+    .catch(function(e){alert('Kayit hatasi: '+e.message);});
 }
-
-function sbUpdateCustomer(id, obj, callback) {
-  supaFetch('customers?id=eq.'+id, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      ad: obj.ad, vkn: obj.vkn, tel: obj.tel, email: obj.email,
-      ucret: obj.ucret, otomatik: obj.otomatik, not_alan: obj.not
-    })
-  }).then(function(){
-      var c = customers.find(function(c){ return c.id==id; });
-      if(c) Object.assign(c, obj);
-      if(callback) callback();
-    })
-    .catch(function(e){ alert('Guncelleme hatasi: '+e.message); });
+function fbUpdateCustomer(id, obj, callback) {
+  db.collection('customers').doc(id).update({ad:obj.ad,vkn:obj.vkn,tel:obj.tel,email:obj.email,ucret:obj.ucret,otomatik:obj.otomatik,not:obj.not})
+    .then(function(){var c=customers.find(function(c){return c.id===id;});if(c)Object.assign(c,obj);if(callback)callback();})
+    .catch(function(e){alert('Guncelleme hatasi: '+e.message);});
 }
-
-function sbDeleteCustomer(id, callback) {
-  supaFetch('customers?id=eq.'+id, { method: 'DELETE' })
-    .then(function(){
-      customers = customers.filter(function(c){ return c.id!=id; });
-      txs = txs.filter(function(t){ return t.mId!=id; });
-      if(callback) callback();
-    })
-    .catch(function(e){ alert('Silme hatasi: '+e.message); });
+function fbDeleteCustomer(id, callback) {
+  var batch=db.batch();
+  db.collection('transactions').where('mId','==',id).get()
+    .then(function(snap){snap.forEach(function(doc){batch.delete(doc.ref);});batch.delete(db.collection('customers').doc(id));return batch.commit();})
+    .then(function(){customers=customers.filter(function(c){return c.id!==id;});txs=txs.filter(function(t){return t.mId!==id;});if(callback)callback();})
+    .catch(function(e){alert('Silme hatasi: '+e.message);});
 }
-
-function sbAddTransaction(obj, callback) {
-  supaFetch('transactions', {
-    method: 'POST',
-    body: JSON.stringify({
-      m_id: obj.mId, tip: obj.tip, tarih: obj.tarih,
-      tutar: obj.tutar, aciklama: obj.aciklama
-    })
-  }).then(function(r){ return r.json(); })
-    .then(function(data){
-      var rec = Array.isArray(data) ? data[0] : data;
-      obj.id = rec.id;
-      txs.push(obj);
-      if(callback) callback();
-    })
-    .catch(function(e){ alert('Islem kayit hatasi: '+e.message); });
+function fbAddTransaction(obj, callback) {
+  db.collection('transactions').add({mId:obj.mId,tip:obj.tip,tarih:obj.tarih,tutar:obj.tutar,aciklama:obj.aciklama})
+    .then(function(ref){obj.id=ref.id;txs.push(obj);if(callback)callback();})
+    .catch(function(e){alert('Islem kayit hatasi: '+e.message);});
 }
-
-function sbDeleteTransaction(id, callback) {
-  supaFetch('transactions?id=eq.'+id, { method: 'DELETE' })
-    .then(function(){
-      txs = txs.filter(function(t){ return t.id!=id; });
-      if(callback) callback();
-    })
-    .catch(function(e){ alert('Silme hatasi: '+e.message); });
+function fbDeleteTransaction(id, callback) {
+  db.collection('transactions').doc(id).delete()
+    .then(function(){txs=txs.filter(function(t){return t.id!==id;});if(callback)callback();})
+    .catch(function(e){alert('Silme hatasi: '+e.message);});
 }
-
-function sbAddTransactionBulk(list, callback) {
-  var rows = list.map(function(obj){ return {
-    m_id: obj.mId, tip: obj.tip, tarih: obj.tarih,
-    tutar: obj.tutar, aciklama: obj.aciklama
-  }; });
-  supaFetch('transactions', {
-    method: 'POST',
-    body: JSON.stringify(rows)
-  }).then(function(r){ return r.json(); })
-    .then(function(data){
-      var recs = Array.isArray(data) ? data : [data];
-      recs.forEach(function(rec, i){ list[i].id = rec.id; txs.push(list[i]); });
-      if(callback) callback();
-    })
-    .catch(function(e){ alert('Toplu tahakkuk hatasi: '+e.message); });
+function fbAddTransactionBulk(list, callback) {
+  var batch=db.batch(); var refs=[];
+  list.forEach(function(obj){var ref=db.collection('transactions').doc();refs.push(ref);batch.set(ref,{mId:obj.mId,tip:obj.tip,tarih:obj.tarih,tutar:obj.tutar,aciklama:obj.aciklama});});
+  batch.commit().then(function(){refs.forEach(function(ref,i){list[i].id=ref.id;txs.push(list[i]);});if(callback)callback();})
+    .catch(function(e){alert('Toplu tahakkuk hatasi: '+e.message);});
 }
-
+function fbAddCustomerBulk(list, callback) {
+  var batch=db.batch(); var refs=[];
+  list.forEach(function(obj){var ref=db.collection('customers').doc();refs.push(ref);batch.set(ref,{ad:obj.ad,vkn:obj.vkn,tel:obj.tel,email:obj.email,ucret:obj.ucret,otomatik:obj.otomatik,not:obj.not});});
+  batch.commit().then(function(){refs.forEach(function(ref,i){list[i].id=ref.id;customers.push(list[i]);});if(callback)callback();})
+    .catch(function(e){alert('Ice aktarma hatasi: '+e.message);});
+}
 
 // ─── OTURUM ──────────────────────────────────────────────────────────────────
 var SESS_KEY='mh_sess';
@@ -882,6 +816,8 @@ function showApp(role, custId){
   if(role === 'admin'){
     document.getElementById('sidebar-user-name').textContent = getAdminEmail();
     document.getElementById('sidebar-footer-txt').textContent = 'Veriler tarayicida saklanir';
+    document.getElementById('btn-settings').style.display = '';
+    document.getElementById('btn-settings-mob').style.display = '';
     // İlk sayfayı göster
     switchPage('musteriler');
     loadAllData(function(){
@@ -973,30 +909,17 @@ function doMusteriLogin(){
   var errEl = el('musteri-err');
   errEl.style.display = 'none';
   showLoading('Giris yapiliyor...');
-  // Supabase'den email ile musteri ara
-  supaFetch('customers?email=eq.' + encodeURIComponent(email) + '&select=*')
-    .then(function(r){ return r.json(); })
-    .then(function(data){
+  db.collection('customers').where('email','==',email).limit(1).get()
+    .then(function(snap){
       hideLoading();
-      if (!Array.isArray(data) || data.length === 0) {
-        errEl.style.display = 'block'; return;
-      }
-      var rec = data[0];
-      var found = {
-        id: rec.id, ad: rec.ad||'', vkn: rec.vkn||'', tel: rec.tel||'',
-        email: rec.email||'', ucret: Number(rec.ucret)||0,
-        otomatik: Number(rec.otomatik)||0, not: rec.not_alan||'', sifre:''
-      };
-      if (pw !== getCustPw(email)) {
-        errEl.style.display = 'block'; el('musteri-pw').select(); return;
-      }
-      setSession('musteri', found.id);
-      showApp('musteri', found.id);
+      if(snap.empty){ errEl.style.display='block'; return; }
+      var doc = snap.docs[0];
+      var d = doc.data();
+      if(pw !== getCustPw(email)){ errEl.style.display='block'; el('musteri-pw').select(); return; }
+      setSession('musteri', doc.id);
+      showApp('musteri', doc.id);
     })
-    .catch(function(){
-      hideLoading();
-      errEl.style.display = 'block';
-    });
+    .catch(function(){ hideLoading(); errEl.style.display='block'; });
 }
 el('musteri-login-btn').addEventListener('click', doMusteriLogin);
 el('musteri-pw').addEventListener('keydown', function(e){ if(e.key==='Enter') doMusteriLogin(); });
@@ -1010,12 +933,17 @@ function doLogout(){ if(!confirm('Cikis yapmak istiyor musunuz?')) return; clear
 el('btn-logout').addEventListener('click',doLogout);
 el('btn-logout-mob').addEventListener('click',doLogout);
 
-// Admin bilgileri değiştir
-el('link-sifre-degistir').addEventListener('click',function(){
+// Admin bilgileri değiştir — hem link hem settings butonu açar
+function openSifreDegistir(){
   el('pw-mevcut').value=''; el('pw-email').value=''; el('pw-yeni').value=''; el('pw-yeni2').value='';
   el('pw-email').placeholder=getAdminEmail();
+  el('pw-current-email').textContent=getAdminEmail();
   hide('pw-error'); show('modal-sifre');
-});
+  setTimeout(function(){ el('pw-mevcut').focus(); }, 80);
+}
+el('link-sifre-degistir').addEventListener('click', openSifreDegistir);
+el('btn-settings').addEventListener('click', openSifreDegistir);
+el('btn-settings-mob').addEventListener('click', openSifreDegistir);
 el('btn-pw-kaydet').addEventListener('click',function(){
   var m=el('pw-mevcut').value, ne=el('pw-email').value.trim(), y=el('pw-yeni').value, y2=el('pw-yeni2').value, err=el('pw-error');
   if(m!==getAdminPw()){ err.textContent='Mevcut sifre yanlis.'; show('pw-error'); return; }
@@ -1138,11 +1066,11 @@ el('btn-musteri-kaydet').addEventListener('click',function(){
   if(newPw && email) setCustPassword(email, newPw);
   showLoading('Kaydediliyor...');
   if(editId){
-    sbUpdateCustomer(editId, obj, function(){
+    fbUpdateCustomer(editId, obj, function(){
       hideLoading(); hide('modal-musteri'); renderMusteriler();
     });
   } else {
-    sbAddCustomer(obj, function(){
+    fbAddCustomer(obj, function(){
       hideLoading(); hide('modal-musteri'); renderMusteriler();
     });
   }
@@ -1150,7 +1078,7 @@ el('btn-musteri-kaydet').addEventListener('click',function(){
 function delMusteri(id){
   if(!confirm('Bu musteriyi silmek istiyor musunuz?')) return;
   showLoading('Siliniyor...');
-  sbDeleteCustomer(id, function(){
+  fbDeleteCustomer(id, function(){
     hideLoading(); renderMusteriler();
   });
 }
@@ -1182,7 +1110,7 @@ el('odeme-tbody').addEventListener('click',function(e){
   if(btn.dataset.action==='del-tx'){
     var id=Number(btn.dataset.id);
     showLoading('Siliniyor...');
-    sbDeleteTransaction(id, function(){
+    fbDeleteTransaction(id, function(){
       hideLoading(); renderOdemeler(); updateStats(); renderMusteriler();
     });
   }
@@ -1197,7 +1125,7 @@ el('btn-odeme-kaydet').addEventListener('click',function(){
   var tutar=Number(el('o-tutar').value); if(!tutar||tutar<=0){ alert('Gecerli bir tutar girin.'); return; }
   var obj={mId:Number(mId),tip:el('o-tip').value,tarih:el('o-tarih').value,tutar:tutar,aciklama:el('o-aciklama').value.trim()};
   showLoading('Kaydediliyor...');
-  sbAddTransaction(obj, function(){
+  fbAddTransaction(obj, function(){
     hideLoading(); hide('modal-odeme'); renderOdemeler(); updateStats(); renderMusteriler();
   });
 });
@@ -1230,7 +1158,7 @@ el('btn-toplu-tah').addEventListener('click',function(){
   });
   if(!list.length){ alert('Eklenecek tahakkuk yok.'); return; }
   showLoading('Tahakkuklar olusturuluyor...');
-  sbAddTransactionBulk(list, function(){
+  fbAddTransactionBulk(list, function(){
     hideLoading(); alert(list.length+' adet tahakkuk olusturuldu.'); renderTahakkuk(); updateStats();
   });
 });
@@ -1455,17 +1383,13 @@ el('btn-import-kaydet').addEventListener('click',function(){
     ad:r.ad, vkn:r.vkn, tel:r.tel, email:r.email,
     ucret:r.ucret, otomatik:r.otomatik, not_alan:r.not
   }; });
-  supaFetch('customers', {
-    method:'POST',
-    body:JSON.stringify(rows)
-  }).then(function(r){ return r.json(); })
-    .then(function(data){
-      hideLoading();
-      hide('modal-import');
-      loadAllData(function(){ renderMusteriler(); });
-      alert(yeni.length+' musteri basariyla ice aktarildi.');
-    })
-    .catch(function(e){ hideLoading(); alert('Ice aktarma hatasi: '+e.message); });
+  showLoading('Ice aktariliyor...');
+  fbAddCustomerBulk(yeni, function(){
+    hideLoading();
+    hide('modal-import');
+    renderMusteriler();
+    alert(yeni.length+' musteri basariyla ice aktarildi.');
+  });
 });
 
 // ─── SEARCHABLE DROPDOWN ─────────────────────────────────────────────────────
