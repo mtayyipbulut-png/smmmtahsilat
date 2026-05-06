@@ -883,9 +883,15 @@ function fbDeleteTransaction(id, callback) {
 }
 function fbAddTransactionBulk(list, callback) {
   var batch=db.batch(); var refs=[];
-  list.forEach(function(obj){var ref=db.collection('transactions').doc();refs.push(ref);batch.set(ref,{mId:obj.mId,tip:obj.tip,tarih:obj.tarih,tutar:obj.tutar,aciklama:obj.aciklama});});
-  batch.commit().then(function(){refs.forEach(function(ref,i){list[i].id=ref.id;txs.push(list[i]);});if(callback)callback();})
-    .catch(function(e){alert('Toplu tahakkuk hatasi: '+e.message);});
+  list.forEach(function(obj){
+    var ref=db.collection('transactions').doc();
+    refs.push(ref);
+    batch.set(ref,{mId:String(obj.mId),tip:obj.tip,tarih:obj.tarih,tutar:obj.tutar,aciklama:obj.aciklama});
+  });
+  batch.commit().then(function(){
+    refs.forEach(function(ref,i){list[i].id=ref.id;list[i].mId=String(list[i].mId);txs.push(list[i]);});
+    if(callback)callback();
+  }).catch(function(e){alert('Toplu tahakkuk hatasi: '+e.message);});
 }
 function fbAddCustomerBulk(list, callback) {
   var batch=db.batch(); var refs=[];
@@ -1476,7 +1482,7 @@ el('btn-islem-gir').addEventListener('click',function(){
 el('btn-odeme-kaydet').addEventListener('click',function(){
   var mId=sfState['odeme']&&sfState['odeme'].value; if(!mId){ alert('Lutfen musteri secin.'); return; }
   var tutar=Number(el('o-tutar').value); if(!tutar||tutar<=0){ alert('Gecerli bir tutar girin.'); return; }
-  var obj={mId:Number(mId),tip:el('o-tip').value,tarih:el('o-tarih').value,tutar:tutar,aciklama:el('o-aciklama').value.trim()};
+  var obj={mId:String(mId),tip:el('o-tip').value,tarih:el('o-tarih').value,tutar:tutar,aciklama:el('o-aciklama').value.trim()};
   showLoading('Kaydediliyor...');
   fbAddTransaction(obj, function(){
     hideLoading(); hide('modal-odeme'); renderOdemeler(); updateStats(); renderMusteriler();
@@ -1506,7 +1512,7 @@ el('btn-toplu-tah').addEventListener('click',function(){
   customers.filter(function(c){ return c.ucret>0; }).forEach(function(c){
     var cb=el('cb-'+c.id); if(!cb||!cb.checked) return;
     if(!txs.some(function(t){ return String(t.mId)===String(c.id)&&t.tip==='tahakkuk'&&t.tarih.slice(0,7)===pfx; })){
-      list.push({mId:c.id,tip:'tahakkuk',tarih:pfx+'-01',tutar:c.ucret,aciklama:AYLAR[ay-1]+' '+yil+' Muhasebe Ucreti'});
+      list.push({mId:String(c.id),tip:'tahakkuk',tarih:pfx+'-01',tutar:c.ucret,aciklama:AYLAR[ay-1]+' '+yil+' Muhasebe Ucreti'});
     }
   });
   if(!list.length){ alert('Eklenecek tahakkuk yok.'); return; }
