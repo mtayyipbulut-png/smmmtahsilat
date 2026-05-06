@@ -210,34 +210,134 @@ tbody tr:hover td{background:var(--surface2)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
 @media(max-width:768px){
+  /* Layout */
   .shell{flex-direction:column;height:auto;min-height:100svh}
   .sidebar{display:none}
-  .main{flex:1;padding-bottom:70px}
+  .main{flex:1;padding-bottom:76px}
   .topbar{display:none}
   .mob-header{display:flex}
   .mob-nav{display:flex}
-  .page{padding:14px 14px 20px}
-  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
-  .s-val{font-size:18px}
+  .page{padding:12px 12px 16px}
+
+  /* Stat grid */
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+  .stat-card{padding:12px 12px}
+  .s-lbl{font-size:10px}
+  .s-val{font-size:17px}
+
+  /* Toolbar */
   .tb{gap:6px}
   .tb-search{min-width:100%;order:-1;flex-basis:100%}
-  .btn{padding:8px 11px;font-size:13px}
-  .btn-sm{padding:5px 9px;font-size:12px}
+  .tb-search input{font-size:16px;padding:10px 12px 10px 34px}
+  .btn{padding:9px 12px;font-size:13px;min-height:40px}
+  .btn-sm{padding:6px 10px;font-size:12px;min-height:34px}
+
+  /* Tablo → kart görünümü */
+  .tbl-wrap{border-radius:var(--r);overflow:hidden}
   table{font-size:13px}
-  thead th{padding:8px 10px;font-size:11px}
-  tbody td{padding:8px 10px}
+  thead{display:none}
+  tbody tr{display:block;border-bottom:1px solid var(--border);padding:10px 12px;position:relative}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover td{background:transparent}
+  tbody td{display:block;padding:2px 0;border:none;font-size:13px}
+  tbody td:empty{display:none}
+  .td-name{font-size:14px;font-weight:600;margin-bottom:4px}
+  .td-sub{margin-top:0}
+  .td-mono{font-size:12px}
+  .td-acts{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+
+  /* Müşteriler tablosu özel */
+  #musteri-tbody tr td:nth-child(2){color:var(--text3);font-size:12px}
+  #musteri-tbody tr td:nth-child(3)::before{content:'Aylık Ücret: ';color:var(--text3);font-size:12px}
+  #musteri-tbody tr td:nth-child(4)::before{content:'Bakiye: ';color:var(--text3);font-size:12px}
+
+  /* Ödemeler tablosu özel */
+  #odeme-tbody tr td:nth-child(1){font-size:11px;color:var(--text3)}
+  #odeme-tbody tr td:nth-child(2){font-weight:600;font-size:14px}
+  #odeme-tbody tr td:nth-child(3){color:var(--text2);font-size:12px}
+
+  /* Ekstre tablosu özel */
+  #ekstre-icerik thead{display:none}
+  #ekstre-icerik tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;padding:10px 12px}
+  #ekstre-icerik tbody tr td:first-child{grid-column:1/-1;font-weight:500;font-size:13px;border-bottom:none}
+  #ekstre-icerik tbody tr td:nth-child(2){grid-column:1/-1;color:var(--text2);font-size:12px;border-bottom:none}
+
+  /* Modal - bottom sheet */
   .row2{grid-template-columns:1fr}
-  .modal{border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;max-height:92vh;margin:0}
+  .modal{border-radius:20px 20px 0 0;position:fixed;bottom:0;left:0;right:0;width:100%;max-width:100%;max-height:92svh;margin:0}
   .overlay{align-items:flex-end;padding:0}
-  .portal-stats{grid-template-columns:repeat(3,1fr)}
-  .month-bar{flex-wrap:wrap;gap:6px}
-  .frow input,.frow select,.frow textarea{font-size:16px}
+  .modal-hd{padding:16px 18px 0}
+  .modal-bd{padding:14px 18px}
+  .modal-ft{padding:0 18px 16px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+  .frow input,.frow select,.frow textarea{font-size:16px;padding:10px 12px;min-height:44px}
+  .frow select{min-height:44px}
+  .frow label{font-size:13px;margin-bottom:5px}
+
+  /* SF (arama) dropdown */
   .tb-search input,.sf-wrap input{font-size:16px}
+  .sf-wrap input{min-height:44px;padding:10px 12px}
+
+  /* Tahakkuk */
+  .month-bar{flex-wrap:wrap;gap:6px;padding:10px 12px}
+  .month-bar select{flex:1;min-height:40px;font-size:14px}
+  .tah-card{padding:12px}
+  .tah-name{font-size:13px}
+  .tah-amt{font-size:13px}
+
+  /* Ekstre header */
+  .eks-hd{flex-direction:column;align-items:flex-start;gap:10px}
+  .eks-hd > div:last-child{width:100%;display:flex;gap:8px}
+  .eks-hd > div:last-child .btn{flex:1;justify-content:center}
+
+  /* Portal header */
+  .portal-header{padding:18px 16px;border-radius:var(--r)}
+  .portal-header .p-name{font-size:17px}
+  .portal-stats{grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+  .portal-stat{padding:10px}
+  .portal-stat .ps-val{font-size:16px}
+
+  /* Login */
+  .login-card{padding:24px 18px;border-radius:16px}
+  .login-logo-name{font-size:16px}
+  .login-input-wrap input{font-size:16px;padding:12px 40px 12px 14px;min-height:48px}
+  .login-btn{min-height:48px;font-size:16px}
+  .login-tab{min-height:40px;font-size:14px}
+
+  /* Mob nav daha büyük */
+  .mob-nav{padding:4px 0 calc(4px + env(safe-area-inset-bottom))}
+  .mob-nav button{padding:8px 4px;font-size:9px}
+  .mob-nav button svg{width:22px;height:22px}
+
+  /* Mob header */
+  .mob-header{padding:10px 14px;min-height:52px}
+  .mob-title{font-size:15px}
+  .icon-btn{width:38px;height:38px;font-size:16px}
 }
+
 @media(max-width:480px){
   .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .login-card{padding:28px 20px}
-  .portal-stats{grid-template-columns:1fr 1fr}
+  .login-card{padding:20px 16px}
+  .portal-stats{grid-template-columns:1fr 1fr 1fr}
+  .portal-stat .ps-val{font-size:15px}
+  .page{padding:10px 10px 14px}
+  .tbl-wrap{border-radius:8px}
+}
+
+/* iOS safe area & bounce fix */
+@supports(padding:max(0px)){
+  .mob-nav{padding-bottom:max(6px, env(safe-area-inset-bottom))}
+  .main{padding-bottom:max(76px, calc(60px + env(safe-area-inset-bottom)))}
+}
+/* Prevent text size inflate on iOS */
+html{-webkit-text-size-adjust:100%}
+/* Touch targets */
+@media(hover:none) and (pointer:coarse){
+  .btn,.btn-sm,.nav-item,.mob-nav button,.icon-btn,.login-btn,.login-tab{
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn{min-height:40px}
+  .btn-sm{min-height:34px}
+  tbody td .btn-sm{min-height:32px}
 }
 </style>
 </head>
@@ -768,6 +868,131 @@ function fbAddCustomerBulk(list, callback) {
     .catch(function(e){alert('Ice aktarma hatasi: '+e.message);});
 }
 
+// ─── YIL SONU DEVİR KAYITLARI ────────────────────────────────────────────────
+function yilSonuDevriKontrol(callback) {
+  var buYil = now.getFullYear();
+  var oncekiYil = buYil - 1;
+
+  // Yalnızca ocak ayında kontrol et
+  if (now.getMonth() !== 0) {
+    if (callback) callback();
+    return;
+  }
+
+  // Bu yıl için devir kaydı daha önce oluşturulmuş mu?
+  var devirKayitTarihi = oncekiYil + '-12-31';
+  var devirKey = 'devir_' + oncekiYil; // localStorage'da işaret tut
+
+  // Daha önce bu yılın devri yapıldıysa tekrar yapma
+  if (localStorage.getItem(devirKey) === '1') {
+    if (callback) callback();
+    return;
+  }
+
+  // Her müşteri için bakiyeyi hesapla ve devir kaydı oluştur
+  var musterilerDevir = [];
+  customers.forEach(function(c) {
+    // Önceki yıl sonuna kadar olan bakiyeyi hesapla
+    var bakiyeOncekiYil = 0;
+    txs.forEach(function(t) {
+      if (t.mId === c.id && t.tarih <= devirKayitTarihi) {
+        bakiyeOncekiYil += t.tip === 'tahakkuk' ? Number(t.tutar) : -Number(t.tutar);
+      }
+    });
+
+    // Zaten 31.12 kapanış kaydı var mı?
+    var kapanisVar = txs.some(function(t) {
+      return t.mId === c.id &&
+             t.tarih === devirKayitTarihi &&
+             t.aciklama.indexOf('Kapanış') >= 0;
+    });
+
+    // 01.01 devir kaydı var mı?
+    var devirVar = txs.some(function(t) {
+      return t.mId === c.id &&
+             t.tarih === buYil + '-01-01' &&
+             t.aciklama.indexOf('Devreden') >= 0;
+    });
+
+    if (bakiyeOncekiYil !== 0 && (!kapanisVar || !devirVar)) {
+      musterilerDevir.push({
+        c: c,
+        bakiye: bakiyeOncekiYil,
+        kapanisVar: kapanisVar,
+        devirVar: devirVar
+      });
+    }
+  });
+
+  if (musterilerDevir.length === 0) {
+    localStorage.setItem(devirKey, '1');
+    if (callback) callback();
+    return;
+  }
+
+  // Toplu batch işlemi
+  var batch = db.batch();
+  var yeniKayitlar = [];
+
+  musterilerDevir.forEach(function(item) {
+    var bakiye = item.bakiye;
+
+    // 31.12 Kapanış kaydı (sadece yoksa ekle)
+    if (!item.kapanisVar) {
+      var kapanisRef = db.collection('transactions').doc();
+      var kapanisObj = {
+        mId: item.c.id,
+        tip: bakiye > 0 ? 'tahakkuk' : 'odeme',
+        tarih: devirKayitTarihi,
+        tutar: Math.abs(bakiye),
+        aciklama: oncekiYil + ' Yılı Kapanış Kaydı'
+      };
+      batch.set(kapanisRef, kapanisObj);
+      yeniKayitlar.push({ref: kapanisRef, obj: Object.assign({id: kapanisRef.id}, kapanisObj)});
+    }
+
+    // 01.01 Devreden bakiye kaydı (sadece yoksa ekle)
+    if (!item.devirVar) {
+      var devirRef = db.collection('transactions').doc();
+      var devirObj = {
+        mId: item.c.id,
+        tip: bakiye > 0 ? 'tahakkuk' : 'odeme',
+        tarih: buYil + '-01-01',
+        tutar: Math.abs(bakiye),
+        aciklama: oncekiYil + ' Yılından Devreden Bakiye'
+      };
+      batch.set(devirRef, devirObj);
+      yeniKayitlar.push({ref: devirRef, obj: Object.assign({id: devirRef.id}, devirObj)});
+    }
+  });
+
+  batch.commit()
+    .then(function() {
+      // Yerel diziye ekle
+      yeniKayitlar.forEach(function(item) {
+        txs.push({
+          id: item.obj.id,
+          mId: item.obj.mId,
+          tip: item.obj.tip,
+          tarih: item.obj.tarih,
+          tutar: item.obj.tutar,
+          aciklama: item.obj.aciklama
+        });
+      });
+      localStorage.setItem(devirKey, '1');
+
+      if (yeniKayitlar.length > 0) {
+        alert(oncekiYil + ' yılı kapanış ve devir kayıtları oluşturuldu.\n' +
+              musterilerDevir.length + ' müşteri için işlem yapıldı.');
+      }
+      if (callback) callback();
+    })
+    .catch(function(e) {
+      console.error('Devir hatasi:', e);
+      if (callback) callback(); // hata olsa bile devam et
+    });
+}
+
 // ─── OTURUM ──────────────────────────────────────────────────────────────────
 var SESS_KEY='mh_sess';
 var currentRole=null;
@@ -833,7 +1058,9 @@ function showApp(role, custId){
     // İlk sayfayı göster
     switchPage('musteriler');
     loadAllData(function(){
-      renderMusteriler();
+      yilSonuDevriKontrol(function(){
+        renderMusteriler();
+      });
     });
   } else {
     switchPage('portal');
