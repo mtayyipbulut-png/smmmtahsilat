@@ -488,9 +488,32 @@ html{-webkit-text-size-adjust:100%}
         <div class="sf-dd hidden" id="sf-odeme-filtre-dd"></div>
       </div>
       <select id="odeme-filtre-tip" style="padding:8px 11px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif">
-        <option value="">Tum Islemler</option><option value="tahakkuk">Tahakkuk</option><option value="odeme">Odeme</option>
+        <option value="">Tum Islemler</option><option value="tahakkuk">Tahakkuk</option><option value="odeme">Tahsilat</option>
       </select>
-      <button class="btn btn-primary" id="btn-islem-gir">+ Islem Gir</button>
+      <button class="btn btn-amber" id="btn-tahakkuk-gir">
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1v8M3.5 5l3.5-3.5L10.5 5"/><path d="M2 11h10"/></svg>
+        + Tahakkuk
+      </button>
+      <div style="position:relative">
+        <button class="btn btn-primary" id="btn-tahsilat-gir">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 9V1M3.5 5l3.5 3.5L10.5 5"/><path d="M2 11h10"/></svg>
+          + Tahsilat &#9660;
+        </button>
+        <div id="tahsilat-menu" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rs);box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:300;min-width:160px;overflow:hidden">
+          <button class="tahsilat-item" data-odeme-turu="Nakit Tahsilat" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);text-align:left;border-bottom:1px solid var(--border)">
+            <span>&#128181;</span> Nakit
+          </button>
+          <button class="tahsilat-item" data-odeme-turu="Havale / EFT" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);text-align:left;border-bottom:1px solid var(--border)">
+            <span>&#127981;</span> Havale / EFT
+          </button>
+          <button class="tahsilat-item" data-odeme-turu="Kredi Karti" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);text-align:left;border-bottom:1px solid var(--border)">
+            <span>&#128179;</span> Kredi Kart&#305;
+          </button>
+          <button class="tahsilat-item" data-odeme-turu="Cek" style="display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);text-align:left">
+            <span>&#128196;</span> &#199;ek
+          </button>
+        </div>
+      </div>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -618,10 +641,10 @@ html{-webkit-text-size-adjust:100%}
   </div>
 </div>
 
-<!-- Odeme/tahakkuk -->
+<!-- Tahakkuk / Tahsilat -->
 <div id="modal-odeme" class="overlay hidden">
   <div class="modal">
-    <div class="modal-hd"><h2>Islem Girisi</h2><button class="modal-x" data-close="modal-odeme">&#215;</button></div>
+    <div class="modal-hd"><h2 id="modal-odeme-baslik">Tahakkuk Girisi</h2><button class="modal-x" data-close="modal-odeme">&#215;</button></div>
     <div class="modal-bd">
       <div class="frow"><label>Musteri *</label>
         <div class="sf-wrap">
@@ -629,8 +652,15 @@ html{-webkit-text-size-adjust:100%}
           <div class="sf-dd hidden" id="sf-odeme-dd"></div>
         </div>
       </div>
-      <div class="frow"><label>Islem Turu</label>
-        <select id="o-tip"><option value="tahakkuk">Tahakkuk (Borclandir)</option><option value="odeme">Odeme Tahsilati</option></select>
+      <input type="hidden" id="o-tip" value="tahakkuk">
+      <div class="frow" id="frow-odeme-yontemi" style="display:none">
+        <label>Odeme Yontemi</label>
+        <select id="o-odeme-yontemi" style="width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif">
+          <option value="Nakit Tahsilat">&#128181; Nakit</option>
+          <option value="Havale / EFT">&#127981; Havale / EFT</option>
+          <option value="Kredi Karti">&#128179; Kredi Karti</option>
+          <option value="Cek">&#128196; Cek</option>
+        </select>
       </div>
       <div class="row2">
         <div class="frow"><label>Tarih</label><input id="o-tarih" type="date"></div>
@@ -1474,15 +1504,57 @@ el('odeme-tbody').addEventListener('click',function(e){
     });
   }
 });
-el('btn-islem-gir').addEventListener('click',function(){
-  sfClear('odeme'); el('o-tarih').value=now.toISOString().slice(0,10);
-  el('o-tutar').value=''; el('o-aciklama').value=''; el('o-tip').value='tahakkuk';
-  show('modal-odeme'); setTimeout(function(){ el('sf-odeme-input').focus(); },50);
+// Tahakkuk butonu
+el('btn-tahakkuk-gir').addEventListener('click', function(){
+  el('modal-odeme-baslik').textContent = 'Tahakkuk Girisi';
+  el('o-tip').value = 'tahakkuk';
+  el('frow-odeme-yontemi').style.display = 'none';
+  el('o-aciklama').placeholder = 'Aylik muhasebe ucreti...';
+  sfClear('odeme');
+  el('o-tarih').value = now.toISOString().slice(0,10);
+  el('o-tutar').value = '';
+  el('o-aciklama').value = '';
+  show('modal-odeme');
+  setTimeout(function(){ el('sf-odeme-input').focus(); }, 50);
+});
+
+// Tahsilat dropdown menü
+var tahsilatMenu = el('tahsilat-menu');
+el('btn-tahsilat-gir').addEventListener('click', function(e){
+  e.stopPropagation();
+  tahsilatMenu.style.display = tahsilatMenu.style.display === 'none' ? 'block' : 'none';
+});
+document.addEventListener('click', function(){ tahsilatMenu.style.display = 'none'; });
+
+document.querySelectorAll('.tahsilat-item').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var tur = this.dataset.odemeTuru;
+    tahsilatMenu.style.display = 'none';
+    el('modal-odeme-baslik').textContent = 'Tahsilat - ' + tur;
+    el('o-tip').value = 'odeme';
+    el('frow-odeme-yontemi').style.display = 'block';
+    el('o-odeme-yontemi').value = tur;
+    el('o-aciklama').placeholder = tur + ' tahsilati...';
+    sfClear('odeme');
+    el('o-tarih').value = now.toISOString().slice(0,10);
+    el('o-tutar').value = '';
+    el('o-aciklama').value = '';
+    show('modal-odeme');
+    setTimeout(function(){ el('sf-odeme-input').focus(); }, 50);
+  });
 });
 el('btn-odeme-kaydet').addEventListener('click',function(){
   var mId=sfState['odeme']&&sfState['odeme'].value; if(!mId){ alert('Lutfen musteri secin.'); return; }
   var tutar=Number(el('o-tutar').value); if(!tutar||tutar<=0){ alert('Gecerli bir tutar girin.'); return; }
-  var obj={mId:String(mId),tip:el('o-tip').value,tarih:el('o-tarih').value,tutar:tutar,aciklama:el('o-aciklama').value.trim()};
+  var tip = el('o-tip').value;
+  var aciklama = el('o-aciklama').value.trim();
+  // Tahsilat ise ödeme yöntemini açıklamaya ekle
+  if(tip === 'odeme'){
+    var yontem = el('o-odeme-yontemi').value;
+    if(!aciklama) aciklama = yontem + ' Tahsilati';
+    else if(aciklama.indexOf(yontem) < 0) aciklama = '[' + yontem + '] ' + aciklama;
+  }
+  var obj={mId:String(mId),tip:tip,tarih:el('o-tarih').value,tutar:tutar,aciklama:aciklama};
   showLoading('Kaydediliyor...');
   fbAddTransaction(obj, function(){
     hideLoading(); hide('modal-odeme'); renderOdemeler(); updateStats(); renderMusteriler();
