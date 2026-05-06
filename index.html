@@ -787,8 +787,19 @@ function getCustPasswords(){ try{ return JSON.parse(localStorage.getItem(CUST_PW
 function setCustPassword(email, pw){ var pws=getCustPasswords(); pws[email.toLowerCase()]=pw; localStorage.setItem(CUST_PW_KEY, JSON.stringify(pws)); }
 function getDefaultCustPw(email){ return email.toLowerCase().slice(0,4); }
 function getCustPw(email){ var pws=getCustPasswords(); var e=email.toLowerCase(); return pws[e]||getDefaultCustPw(e); }
-function getCust(id){ var sid=String(id); for(var i=0;i<customers.length;i++) if(customers[i].id===sid) return customers[i]; return {ad:'—',email:'',vkn:''}; }
-function balance(mId){ var sid=String(mId); var s=0; txs.forEach(function(t){ if(String(t.mId)===sid) s+=t.tip==='tahakkuk'?Number(t.tutar):-Number(t.tutar); }); return s; }
+function getCust(id){ 
+  if(!id) return {ad:'—',email:'',vkn:''};
+  var sid=String(id); 
+  for(var i=0;i<customers.length;i++) if(String(customers[i].id)===sid) return customers[i]; 
+  return {ad:'—',email:'',vkn:''}; 
+}
+function balance(mId){ 
+  if(!mId) return 0;
+  var sid=String(mId); 
+  var s=0; 
+  txs.forEach(function(t){ if(String(t.mId)===sid) s+=t.tip==='tahakkuk'?Number(t.tutar):-Number(t.tutar); }); 
+  return s; 
+}
 
 // ─── VERİ KATMANI ─────────────────────────────────────────────────────────────
 function showLoading(msg) {
@@ -825,7 +836,7 @@ function loadAllData(callback) {
       txs = [];
       snap.forEach(function(doc) {
         var d = doc.data();
-        txs.push({id:doc.id, mId:d.mId, tip:d.tip, tarih:d.tarih, tutar:Number(d.tutar)||0, aciklama:d.aciklama||''});
+        txs.push({id:doc.id, mId:String(d.mId||''), tip:d.tip, tarih:d.tarih, tutar:Number(d.tutar)||0, aciklama:d.aciklama||''});
       });
       loaded++; if(loaded===2){hideLoading();if(callback)callback();}
     }).catch(function(e){hideLoading();alert('Islemler yuklenemedi: '+e.message);});
@@ -846,7 +857,7 @@ function fbDeleteCustomer(id, callback) {
   if(!id){ alert('Gecersiz musteri ID.'); return; }
   var sid = String(id);
   var batch=db.batch();
-  db.collection('transactions').where('mId','==',sid).get()
+  db.collection('transactions').where('mId','==',String(sid)).get()
     .then(function(snap){
       snap.forEach(function(doc){batch.delete(doc.ref);});
       batch.delete(db.collection('customers').doc(sid));
@@ -1477,7 +1488,7 @@ function renderTahakkuk(){
   var ay=Number(el('tahakkuk-ay').value), yil=Number(el('tahakkuk-yil').value);
   var pfx=yil+'-'+String(ay).padStart(2,'0'); var html='';
   customers.filter(function(c){ return c.ucret>0; }).forEach(function(c){
-    var done=txs.some(function(t){ return t.mId==c.id&&t.tip==='tahakkuk'&&t.tarih.slice(0,7)===pfx; });
+    var done=txs.some(function(t){ return String(t.mId)===String(c.id)&&t.tip==='tahakkuk'&&t.tarih.slice(0,7)===pfx; });
     html+='<div class="tah-card"><input class="tah-cb" type="checkbox" id="cb-'+c.id+'"'+(done?' disabled':'')+(c.otomatik&&!done?' checked':'')+'>'
       +'<div class="tah-info"><div class="tah-name">'+esc(c.ad)+'</div><div class="tah-sub">'+esc(c.vkn)+' - '+(c.otomatik?'Otomatik':'Manuel')+'</div></div>'
       +'<div class="tah-amt">'+fmt(c.ucret)+'</div>'
@@ -1494,7 +1505,7 @@ el('btn-toplu-tah').addEventListener('click',function(){
   var list=[];
   customers.filter(function(c){ return c.ucret>0; }).forEach(function(c){
     var cb=el('cb-'+c.id); if(!cb||!cb.checked) return;
-    if(!txs.some(function(t){ return t.mId==c.id&&t.tip==='tahakkuk'&&t.tarih.slice(0,7)===pfx; })){
+    if(!txs.some(function(t){ return String(t.mId)===String(c.id)&&t.tip==='tahakkuk'&&t.tarih.slice(0,7)===pfx; })){
       list.push({mId:c.id,tip:'tahakkuk',tarih:pfx+'-01',tutar:c.ucret,aciklama:AYLAR[ay-1]+' '+yil+' Muhasebe Ucreti'});
     }
   });
@@ -1514,7 +1525,7 @@ function renderEkstre(){
 }
 function renderEkstreFor(mId, bas, bit, container, adminMode){
   var c=getCust(mId);
-  var list=txs.filter(function(t){ return t.mId==mId&&t.tarih.slice(0,7)>=bas&&t.tarih.slice(0,7)<=bit; })
+  var list=txs.filter(function(t){ return String(t.mId)===String(mId)&&t.tarih.slice(0,7)>=bas&&t.tarih.slice(0,7)<=bit; })
     .sort(function(a,b){ return a.tarih.localeCompare(b.tarih); });
   var bk=0;
   var rows=list.map(function(t){
@@ -1671,7 +1682,7 @@ function renderPortal(){
 function renderPortalTable(){
   var c=getCust(currentCustId); if(!c||!c.id) return;
   var bas=el('portal-bas').value, bit=el('portal-bit').value;
-  var list=txs.filter(function(t){ return t.mId==c.id&&t.tarih.slice(0,7)>=bas&&t.tarih.slice(0,7)<=bit; })
+  var list=txs.filter(function(t){ return String(t.mId)===String(c.id)&&t.tarih.slice(0,7)>=bas&&t.tarih.slice(0,7)<=bit; })
     .sort(function(a,b){ return a.tarih.localeCompare(b.tarih); });
   var bk=0; var html='';
   list.forEach(function(t){
