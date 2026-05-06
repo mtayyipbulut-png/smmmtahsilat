@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>SMMM MEHMET TAYYİP BULUT — Müşteri Takip</title>
+<title>SM Mali Müşavir Mehmet Tayyip Bulut — Ödeme Takip</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -26,7 +26,7 @@
   --shadow-dd:0 4px 20px rgba(0,0,0,.45);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);font-size:16px;line-height:1.5;transition:background .2s,color .2s}
+html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);font-size:15px;line-height:1.55;transition:background .2s,color .2s}
 
 /* ── LOGIN ── */
 #login-screen{position:fixed;inset:0;background:var(--bg);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -63,7 +63,7 @@ html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;colo
 .brand-role.musteri{background:var(--blue-bg);color:var(--blue-text)}
 .brand-sub{font-size:11px;color:var(--text3);margin-top:2px}
 .nav{padding:10px;flex:1}
-.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--rs);cursor:pointer;font-size:14px;color:var(--text2);transition:background .12s,color .12s;margin-bottom:2px;user-select:none;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rs);cursor:pointer;font-size:14.5px;color:var(--text2);transition:background .12s,color .12s;margin-bottom:2px;user-select:none;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
 .nav-item.active{background:var(--green-bg);color:var(--green-text);font-weight:500}
 .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
@@ -71,7 +71,7 @@ html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;colo
 .sidebar-footer{padding:12px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .topbar{padding:13px 24px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.topbar-title{font-size:16px;font-weight:600;letter-spacing:-.3px}
+.topbar-title{font-size:17px;font-weight:600;letter-spacing:-.3px}
 .topbar-date{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
 .page{padding:22px 26px;overflow-y:auto;flex:1}
 .hidden{display:none!important}
@@ -80,7 +80,7 @@ html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;colo
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
 .s-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px}
-.s-val{font-size:22px;font-weight:600;letter-spacing:-.5px;font-family:'DM Mono',monospace}
+.s-val{font-size:24px;font-weight:600;letter-spacing:-.5px;font-family:'DM Mono',monospace}
 .s-val.danger{color:var(--red)}.s-val.success{color:var(--green)}
 
 /* ── TOOLBAR ── */
@@ -91,7 +91,7 @@ html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;colo
 .tb-search input:focus{outline:none;border-color:var(--green)}
 
 /* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid transparent;transition:all .12s;white-space:nowrap;line-height:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--rs);font-size:14.5px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid transparent;transition:all .12s;white-space:nowrap;line-height:1}
 .btn:active{transform:scale(.98)}
 .btn svg{width:13px;height:13px;flex-shrink:0}
 .btn-primary{background:var(--green);color:#fff;border-color:var(--green)}
@@ -108,9 +108,9 @@ html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;colo
 
 /* ── TABLE ── */
 .tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-table{width:100%;border-collapse:collapse;font-size:14px}
-thead th{padding:9px 14px;text-align:left;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)}
-tbody td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+thead th{padding:10px 14px;text-align:left;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--surface2)}
 .td-name{font-weight:500}.td-sub{font-size:12px;color:var(--text3);margin-top:2px}
@@ -118,7 +118,7 @@ tbody tr:hover td{background:var(--surface2)}
 .td-acts{display:flex;gap:6px}
 
 /* ── BADGES ── */
-.badge{display:inline-flex;align-items:center;font-size:12px;font-weight:500;padding:2px 8px;border-radius:20px}
+.badge{display:inline-flex;align-items:center;font-size:12.5px;font-weight:500;padding:3px 9px;border-radius:20px}
 .badge-ok{background:var(--green-bg);color:var(--green-text)}
 .badge-bad{background:var(--red-bg);color:var(--red-text)}
 .badge-warn{background:var(--amber-bg);color:var(--amber-text)}
@@ -350,7 +350,7 @@ html{-webkit-text-size-adjust:100%}
       <div class="login-logo-mark">
         <svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><line x1="9" y1="11.5" x2="14" y2="11.5"/><line x1="11.5" y1="9" x2="11.5" y2="14"/></svg>
       </div>
-      <span class="login-logo-name">SMMM MEHMET TAYYİP BULUT</span>
+      <span class="login-logo-name" style="font-size:14px;text-align:center;line-height:1.3">SERBEST MUHASEBECİ MALİ MÜŞAVİR<br>MEHMET TAYYİP BULUT</span>
     </div>
     <div style="text-align:center;font-size:13px;color:var(--text3);margin-top:-16px;margin-bottom:22px;letter-spacing:.03em">Ödeme Takip Sistemi</div>
     <div class="login-tabs">
@@ -402,8 +402,8 @@ html{-webkit-text-size-adjust:100%}
         <svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><line x1="9" y1="11.5" x2="14" y2="11.5"/><line x1="11.5" y1="9" x2="11.5" y2="14"/></svg>
       </div>
       <div>
-        <div class="brand-name">SMMM MEHMET TAYYİP BULUT</div>
-        <div style="font-size:10px;color:var(--text3);margin-top:1px">Ödeme Takip Sistemi</div>
+        <div class="brand-name" style="font-size:11px;line-height:1.3;letter-spacing:0">SERBEST MUHASEBECİ MALİ MÜŞAVİR<br>MEHMET TAYYİP BULUT</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">Ödeme Takip Sistemi</div>
         <div class="brand-role" id="sidebar-role-badge">Admin</div>
       </div>
     </div>
@@ -698,6 +698,21 @@ html{-webkit-text-size-adjust:100%}
       <div class="frow"><label>Yeni Sifre</label><input type="password" id="pw-yeni" placeholder="Degistirmek istemiyorsaniz bos birakin"></div>
       <div class="frow"><label>Yeni Sifre (tekrar)</label><input type="password" id="pw-yeni2"></div>
       <div class="login-error hidden" id="pw-error"></div>
+
+      <div style="border-top:1px solid var(--border);margin:16px 0 14px;"></div>
+      <div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:10px">&#128190; Yedekleme ve Geri Yukleme</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-green" id="btn-yedekle" style="flex:1">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 1v8M3.5 6l3.5 3.5L10.5 6"/><path d="M1.5 11.5h11"/></svg>
+          Yedek Al (JSON)
+        </button>
+        <button class="btn btn-ghost" id="btn-geri-yukle" style="flex:1">
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M7 9V1M3.5 4l3.5-3.5L10.5 4"/><path d="M1.5 11.5h11"/></svg>
+          Geri Yukle
+        </button>
+      </div>
+      <input type="file" id="restore-file-input" accept=".json" style="display:none">
+      <div id="restore-info" style="font-size:12px;color:var(--text3);margin-top:8px;display:none"></div>
     </div>
     <div class="modal-ft">
       <button class="btn btn-ghost" data-close="modal-sifre">Iptal</button>
@@ -1194,7 +1209,95 @@ el('btn-pw-kaydet').addEventListener('click',function(){
   alert('Yonetici bilgileri guncellendi.\nE-posta: '+(ne||getAdminEmail()));
 });
 
-// Müşteri şifre değiştir
+// ─── YEDEKLEMEveGERİ YÜKLEME ──────────────────────────────────────────────────
+el('btn-yedekle').addEventListener('click', function(){
+  showLoading('Veriler hazirlaniyor...');
+  var loaded = 0;
+  var backupData = { tarih: new Date().toISOString(), customers: [], transactions: [] };
+
+  db.collection('customers').get()
+    .then(function(snap){
+      snap.forEach(function(doc){ backupData.customers.push(Object.assign({_id: doc.id}, doc.data())); });
+      loaded++;
+      if(loaded === 2) doDownload();
+    });
+
+  db.collection('transactions').get()
+    .then(function(snap){
+      snap.forEach(function(doc){ backupData.transactions.push(Object.assign({_id: doc.id}, doc.data())); });
+      loaded++;
+      if(loaded === 2) doDownload();
+    });
+
+  function doDownload(){
+    hideLoading();
+    var json = JSON.stringify(backupData, null, 2);
+    var blob = new Blob([json], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'smmm_yedek_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    el('restore-info').style.display = 'block';
+    el('restore-info').textContent = backupData.customers.length + ' musteri ve ' + backupData.transactions.length + ' islem yedeklendi.';
+  }
+});
+
+el('btn-geri-yukle').addEventListener('click', function(){
+  el('restore-file-input').click();
+});
+
+el('restore-file-input').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var data = JSON.parse(ev.target.result);
+      if(!data.customers || !data.transactions){ alert('Gecersiz yedek dosyasi.'); return; }
+      if(!confirm(data.customers.length + ' musteri ve ' + data.transactions.length + ' islem geri yuklenecek.\n\nMEVCUT TUM VERILER SILINECEK!\n\nEmin misiniz?')) return;
+
+      showLoading('Geri yukleniyor...');
+      // Önce tüm mevcut verileri sil
+      var delBatch = db.batch();
+      var delLoaded = 0;
+
+      db.collection('customers').get().then(function(snap){
+        snap.forEach(function(doc){ delBatch.delete(doc.ref); });
+        delLoaded++;
+        if(delLoaded === 2) doRestore();
+      });
+      db.collection('transactions').get().then(function(snap){
+        snap.forEach(function(doc){ delBatch.delete(doc.ref); });
+        delLoaded++;
+        if(delLoaded === 2) doRestore();
+      });
+
+      function doRestore(){
+        delBatch.commit().then(function(){
+          // Yeni verileri ekle
+          var addBatch = db.batch();
+          data.customers.forEach(function(c){
+            var id = c._id; var obj = Object.assign({}, c); delete obj._id;
+            addBatch.set(db.collection('customers').doc(id), obj);
+          });
+          data.transactions.forEach(function(t){
+            var id = t._id; var obj = Object.assign({}, t); delete obj._id;
+            addBatch.set(db.collection('transactions').doc(id), obj);
+          });
+          return addBatch.commit();
+        }).then(function(){
+          hideLoading();
+          alert('Geri yukleme tamamlandi! Sayfa yenileniyor...');
+          location.reload();
+        }).catch(function(e){ hideLoading(); alert('Geri yukleme hatasi: '+e.message); });
+      }
+    } catch(err){ alert('Dosya okunamadi: '+err.message); }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
 el('btn-mpw-kaydet').addEventListener('click',function(){
   var c=getCust(currentCustId);
   var email=c.email.toLowerCase();
@@ -1327,7 +1430,7 @@ function renderOdemeler(){
   var st=sfState['odeme-filtre'], fMId=st?st.value:null;
   var fTip=el('odeme-filtre-tip').value;
   var list=txs.slice().sort(function(a,b){ return b.tarih.localeCompare(a.tarih); });
-  if(fMId) list=list.filter(function(t){ return t.mId==fMId; });
+  if(fMId) list=list.filter(function(t){ return String(t.mId)===String(fMId); });
   if(fTip) list=list.filter(function(t){ return t.tip===fTip; });
   var html='';
   list.forEach(function(t){
@@ -1453,31 +1556,91 @@ function renderEkstreFor(mId, bas, bit, container, adminMode){
 function openEkstreDirect(id){
   goToPage('ekstre'); sfSet('ekstre',id); renderEkstre();
 }
+function trFix(s){
+  // Türkçe karakterleri jsPDF'in anlayacağı Latin-1 eşdeğerleriyle değiştir
+  return String(s||'')
+    .replace(/İ/g,'I').replace(/ı/g,'i')
+    .replace(/Ğ/g,'G').replace(/ğ/g,'g')
+    .replace(/Ş/g,'S').replace(/ş/g,'s')
+    .replace(/Ö/g,'O').replace(/ö/g,'o')
+    .replace(/Ü/g,'U').replace(/ü/g,'u')
+    .replace(/Ç/g,'C').replace(/ç/g,'c');
+}
+
 function ekstre_PDF(){
   if(!ekstreData) return;
-  var jsPDF=window.jspdf&&window.jspdf.jsPDF;
-  if(!jsPDF){ alert('PDF kutuphanesi yuklenemedi.'); return; }
-  var d=ekstreData; var doc=new jsPDF();
-  doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.text('Cari Hesap Ekstresi',14,18);
-  doc.setFont('helvetica','normal'); doc.setFontSize(10);
-  doc.text('Musteri: '+d.c.ad,14,28); doc.text('Vergi No: '+(d.c.vkn||''),14,34);
-  doc.text('Donem: '+d.bas+' - '+d.bit,14,40); doc.text('Tarih: '+new Date().toLocaleDateString('tr-TR'),14,46);
-  var y=58; var cols=[14,60,118,148,174];
-  doc.setFont('helvetica','bold'); doc.setFillColor(235,235,235); doc.rect(14,y-5,182,8,'F');
-  ['Tarih','Aciklama','Borc (TL)','Alacak (TL)','Bakiye (TL)'].forEach(function(h,i){ doc.text(h,cols[i],y); });
-  y+=8; doc.setFont('helvetica','normal');
-  d.rows.forEach(function(r){
-    if(y>272){ doc.addPage(); y=20; }
-    doc.text(new Date(r.tarih).toLocaleDateString('tr-TR'),cols[0],y);
-    doc.text(String(r.aciklama).slice(0,30),cols[1],y);
-    if(r.borc) doc.text(Number(r.borc).toLocaleString('tr-TR'),cols[2],y);
-    if(r.alacak) doc.text(Number(r.alacak).toLocaleString('tr-TR'),cols[3],y);
-    doc.text(Number(r.bakiye).toLocaleString('tr-TR'),cols[4],y);
-    y+=7;
-  });
-  y+=4; doc.setFont('helvetica','bold'); doc.line(14,y-2,196,y-2);
-  doc.text('Son Bakiye:',cols[3]-20,y+6); doc.text(Number(d.bk).toLocaleString('tr-TR')+' TL',cols[4],y+6);
-  doc.save(d.c.ad.replace(/[^a-z0-9]/gi,'_')+'_ekstre.pdf');
+  var d = ekstreData;
+
+  // HTML tabanlı print — Türkçe karakter desteği tam
+  var totBorc   = d.rows.reduce(function(s,r){return s+r.borc;},0);
+  var totAlacak = d.rows.reduce(function(s,r){return s+r.alacak;},0);
+
+  var satirlar = d.rows.map(function(r){
+    return '<tr>'
+      +'<td>'+new Date(r.tarih).toLocaleDateString('tr-TR')+'</td>'
+      +'<td style="max-width:200px">'+String(r.aciklama)+'</td>'
+      +'<td class="num">'+(r.borc ? Number(r.borc).toLocaleString('tr-TR') : '')+'</td>'
+      +'<td class="num">'+(r.alacak ? Number(r.alacak).toLocaleString('tr-TR') : '')+'</td>'
+      +'<td class="num '+(r.bakiye>0?'red':'green')+'">'+Number(r.bakiye).toLocaleString('tr-TR')+'</td>'
+      +'</tr>';
+  }).join('');
+
+  var html = '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">'
+    +'<title>Ekstre - '+d.c.ad+'</title>'
+    +'<style>'
+    +'*{margin:0;padding:0;box-sizing:border-box}'
+    +'body{font-family:Arial,sans-serif;font-size:11pt;color:#111;padding:20px}'
+    +'.header{margin-bottom:18px}'
+    +'.firm{font-size:13pt;font-weight:700;margin-bottom:2px}'
+    +'.firm-sub{font-size:9pt;color:#555;margin-bottom:12px}'
+    +'.title{font-size:15pt;font-weight:700;border-bottom:2px solid #2A5C45;padding-bottom:6px;margin-bottom:10px}'
+    +'.meta{font-size:9.5pt;color:#444;line-height:1.8}'
+    +'table{width:100%;border-collapse:collapse;margin-top:16px;font-size:10pt}'
+    +'thead th{background:#2A5C45;color:#fff;padding:7px 8px;text-align:left;font-weight:600}'
+    +'thead th.num{text-align:right}'
+    +'tbody td{padding:6px 8px;border-bottom:1px solid #e0e0e0}'
+    +'tbody tr:nth-child(even) td{background:#f8f8f6}'
+    +'.num{text-align:right;font-family:"Courier New",monospace}'
+    +'.red{color:#c0392b;font-weight:600}'
+    +'.green{color:#2A5C45;font-weight:600}'
+    +'.totals{background:#f0ece4!important}'
+    +'.totals td{font-weight:700;border-top:2px solid #2A5C45;padding:8px}'
+    +'.footer{margin-top:20px;font-size:9pt;color:#888;text-align:right}'
+    +'@media print{'
+    +'  body{padding:10px}'
+    +'  button{display:none!important}'
+    +'}'
+    +'</style></head><body>'
+    +'<div class="header">'
+    +'<div class="firm">SERBEST MUHASEBECİ MALİ MÜŞAVİR MEHMET TAYYİP BULUT</div>'
+    +'<div class="firm-sub">Ödeme Takip Sistemi</div>'
+    +'<div class="title">Cari Hesap Ekstresi</div>'
+    +'<div class="meta">'
+    +'<b>Müşteri:</b> '+d.c.ad+'<br>'
+    +'<b>Vergi No:</b> '+(d.c.vkn||'—')+'<br>'
+    +'<b>E-posta:</b> '+(d.c.email||'—')+'<br>'
+    +'<b>Dönem:</b> '+d.bas+' — '+d.bit+'<br>'
+    +'<b>Rapor Tarihi:</b> '+new Date().toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})
+    +'</div></div>'
+    +'<table>'
+    +'<thead><tr><th>Tarih</th><th>Açıklama</th><th class="num">Borç (TL)</th><th class="num">Alacak (TL)</th><th class="num">Bakiye (TL)</th></tr></thead>'
+    +'<tbody>'+satirlar
+    +'<tr class="totals">'
+    +'<td colspan="2">TOPLAM</td>'
+    +'<td class="num">'+(totBorc?Number(totBorc).toLocaleString('tr-TR'):'')+'</td>'
+    +'<td class="num">'+(totAlacak?Number(totAlacak).toLocaleString('tr-TR'):'')+'</td>'
+    +'<td class="num '+(d.bk>0?'red':'green')+'">'+Number(d.bk).toLocaleString('tr-TR')+'</td>'
+    +'</tr>'
+    +'</tbody></table>'
+    +'<div class="footer">SERBEST MUHASEBECİ MALİ MÜŞAVİR MEHMET TAYYİP BULUT &nbsp;|&nbsp; '
+    +new Date().toLocaleDateString('tr-TR')+'</div>'
+    +'<script>window.onload=function(){window.print();}<\/script>'
+    +'</body></html>';
+
+  var w = window.open('','_blank','width=900,height=700');
+  if(!w){ alert('Popup engelleyici aktif. Lutfen izin verin.'); return; }
+  w.document.write(html);
+  w.document.close();
 }
 el('btn-mail-gonder').addEventListener('click',function(){
   var to=el('mail-to').value; if(!to){ alert('E-posta girin.'); return; }
